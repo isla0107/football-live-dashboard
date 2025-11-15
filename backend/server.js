@@ -358,7 +358,7 @@ app.listen(PORT, () => {
 
   // Start syncing today fixtures every 60s (adjust for rate limits)
   syncTodayFixtures();
-  setInterval(syncTodayFixtures, 60000);
+  setInterval(syncTodayFixtures, 1800000);
 });
 
 // 4) Lineups for a fixture (directly from API-Football)
