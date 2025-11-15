@@ -71,44 +71,52 @@ async function syncTodayFixtures() {
         // Upsert fixture
         const startTime = fixture.date ? new Date(fixture.date) : null;
 
-        await conn.execute(
-          `
-          INSERT INTO fixtures (
-            id, league_id,
-            home_team, home_logo,
-            away_team, away_logo,
-            start_time, status_short, status_long, status_elapsed,
-            home_goals, away_goals
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON DUPLICATE KEY UPDATE
-            league_id = VALUES(league_id),
-            home_team = VALUES(home_team),
-            home_logo = VALUES(home_logo),
-            away_team = VALUES(away_team),
-            away_logo = VALUES(away_logo),
-            start_time = VALUES(start_time),
-            status_short = VALUES(status_short),
-            status_long = VALUES(status_long),
-            status_elapsed = VALUES(status_elapsed),
-            home_goals = VALUES(home_goals),
-            away_goals = VALUES(away_goals)
-          `,
-          [
-            fixture.id,
-            league.id,
-            teams.home.name,
-            teams.home.logo || null,
-            teams.away.name,
-            teams.away.logo || null,
-            startTime,
-            fixture.status.short,
-            fixture.status.long,
-            fixture.status.elapsed || null,
-            goals.home ?? null,
-            goals.away ?? null,
-          ]
-        );
+             await conn.execute(
+        `
+        INSERT INTO fixtures (
+          id,
+          league_id,
+          home_team,
+          home_logo,
+          away_team,
+          away_logo,
+          start_time,
+          status_short,
+          status_long,
+          status_elapsed,
+          home_goals,
+          away_goals
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          league_id       = VALUES(league_id),
+          home_team       = VALUES(home_team),
+          home_logo       = VALUES(home_logo),
+          away_team       = VALUES(away_team),
+          away_logo       = VALUES(away_logo),
+          start_time      = VALUES(start_time),
+          status_short    = VALUES(status_short),
+          status_long     = VALUES(status_long),
+          status_elapsed  = VALUES(status_elapsed),
+          home_goals      = VALUES(home_goals),
+          away_goals      = VALUES(away_goals)
+        `,
+        [
+          fixture.id,
+          league.id,
+          teams.home.name,
+          teams.home.logo || null,
+          teams.away.name,
+          teams.away.logo || null,
+          startTime,
+          fixture.status.short,
+          fixture.status.long,
+          fixture.status.elapsed || null,
+          goals.home ?? null,
+          goals.away ?? null,
+        ]
+      );
+
 
       }
 
@@ -175,13 +183,13 @@ app.get('/api/fixtures/today', async (req, res) => {
 
   try {
     const params = [today];
-    let sql = `
+        let sql = `
       SELECT
         f.id,
         f.league_id,
-        l.name   AS league_name,
+        l.name    AS league_name,
         l.country AS league_country,
-        l.logo   AS league_logo,
+        l.logo    AS league_logo,
         f.home_team,
         f.home_logo,
         f.away_team,
@@ -198,6 +206,7 @@ app.get('/api/fixtures/today', async (req, res) => {
     `;
 
 
+
     if (!Number.isNaN(leagueId) && leagueId) {
       sql += ' AND f.league_id = ?';
       params.push(leagueId);
@@ -207,7 +216,7 @@ app.get('/api/fixtures/today', async (req, res) => {
 
     const [rows] = await pool.execute(sql, params);
 
-    const response = rows.map((r) => ({
+        const response = rows.map((r) => ({
       fixture: {
         id: r.id,
         status: {
@@ -221,17 +230,24 @@ app.get('/api/fixtures/today', async (req, res) => {
         id: r.league_id,
         name: r.league_name,
         country: r.league_country,
-        logo: r.league_logo,           // 👈 add this
+        logo: r.league_logo,
       },
       teams: {
-        home: { name: r.home_team, logo: r.home_logo }, // 👈 add logo
-        away: { name: r.away_team, logo: r.away_logo }, // 👈 add logo
+        home: {
+          name: r.home_team,
+          logo: r.home_logo,
+        },
+        away: {
+          name: r.away_team,
+          logo: r.away_logo,
+        },
       },
       goals: {
         home: r.home_goals,
         away: r.away_goals,
       },
     }));
+
 
 
     res.json({ response });
@@ -360,3 +376,4 @@ app.get('/api/fixtures/:id/lineups', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch lineups' });
   }
 });
+
