@@ -74,15 +74,19 @@ async function syncTodayFixtures() {
         await conn.execute(
           `
           INSERT INTO fixtures (
-            id, league_id, home_team, away_team,
+            id, league_id,
+            home_team, home_logo,
+            away_team, away_logo,
             start_time, status_short, status_long, status_elapsed,
             home_goals, away_goals
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE
             league_id = VALUES(league_id),
             home_team = VALUES(home_team),
+            home_logo = VALUES(home_logo),
             away_team = VALUES(away_team),
+            away_logo = VALUES(away_logo),
             start_time = VALUES(start_time),
             status_short = VALUES(status_short),
             status_long = VALUES(status_long),
@@ -94,7 +98,9 @@ async function syncTodayFixtures() {
             fixture.id,
             league.id,
             teams.home.name,
+            teams.home.logo || null,
             teams.away.name,
+            teams.away.logo || null,
             startTime,
             fixture.status.short,
             fixture.status.long,
@@ -103,6 +109,7 @@ async function syncTodayFixtures() {
             goals.away ?? null,
           ]
         );
+
       }
 
       await conn.commit();
@@ -174,8 +181,11 @@ app.get('/api/fixtures/today', async (req, res) => {
         f.league_id,
         l.name   AS league_name,
         l.country AS league_country,
+        l.logo   AS league_logo,
         f.home_team,
+        f.home_logo,
         f.away_team,
+        f.away_logo,
         f.start_time,
         f.status_short,
         f.status_long,
@@ -186,6 +196,7 @@ app.get('/api/fixtures/today', async (req, res) => {
       JOIN leagues l ON f.league_id = l.id
       WHERE DATE(f.start_time) = ?
     `;
+
 
     if (!Number.isNaN(leagueId) && leagueId) {
       sql += ' AND f.league_id = ?';
@@ -210,16 +221,18 @@ app.get('/api/fixtures/today', async (req, res) => {
         id: r.league_id,
         name: r.league_name,
         country: r.league_country,
+        logo: r.league_logo,           // 👈 add this
       },
       teams: {
-        home: { name: r.home_team },
-        away: { name: r.away_team },
+        home: { name: r.home_team, logo: r.home_logo }, // 👈 add logo
+        away: { name: r.away_team, logo: r.away_logo }, // 👈 add logo
       },
       goals: {
         home: r.home_goals,
         away: r.away_goals,
       },
     }));
+
 
     res.json({ response });
   } catch (err) {
@@ -330,4 +343,20 @@ app.listen(PORT, () => {
   // Start syncing today fixtures every 60s (adjust for rate limits)
   syncTodayFixtures();
   setInterval(syncTodayFixtures, 60000);
+});
+
+// 4) Lineups for a fixture (directly from API-Football)
+app.get('/api/fixtures/:id/lineups', async (req, res) => {
+  const fixtureId = parseInt(req.params.id, 10);
+  if (Number.isNaN(fixtureId)) {
+    return res.status(400).json({ error: 'Invalid fixture id' });
+  }
+
+  try {
+    const data = await callApiFootball('/fixtures/lineups', { fixture: fixtureId });
+    res.json({ response: data.response || [] });
+  } catch (err) {
+    console.error('Error fetching lineups:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to fetch lineups' });
+  }
 });
