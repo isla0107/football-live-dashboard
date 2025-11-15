@@ -331,3 +331,19 @@ app.listen(PORT, () => {
   syncTodayFixtures();
   setInterval(syncTodayFixtures, 60000);
 });
+
+// 4) Lineups for a fixture (directly from API-Football)
+app.get('/api/fixtures/:id/lineups', async (req, res) => {
+  const fixtureId = parseInt(req.params.id, 10);
+  if (Number.isNaN(fixtureId)) {
+    return res.status(400).json({ error: 'Invalid fixture id' });
+  }
+
+  try {
+    const data = await callApiFootball('/fixtures/lineups', { fixture: fixtureId });
+    res.json({ response: data.response || [] });
+  } catch (err) {
+    console.error('Error fetching lineups:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to fetch lineups' });
+  }
+});
