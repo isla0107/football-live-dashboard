@@ -58,6 +58,11 @@ export function MatchDetailsPanel({ fixture }) {
       })
     : "";
 
+  const homeLogo = fixture?.teams?.home?.logo;
+  const awayLogo = fixture?.teams?.away?.logo;
+  const leagueLogo = fixture?.league?.logo;
+
+
   const { homeLineup, awayLineup } = useMemo(() => {
     if (!lineups || lineups.length === 0) {
       return { homeLineup: null, awayLineup: null };
@@ -101,32 +106,103 @@ export function MatchDetailsPanel({ fixture }) {
         overflowY: "auto",
       }}
     >
-      {/* Header: teams + score */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <div>
-          <h3 style={{ margin: 0 }}>
-            {homeName} vs {awayName}
-          </h3>
-          <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-            {fixture.league.name} ({fixture.league.country}) • {koTime}
-          </p>
-          <p style={{ margin: "4px 0", fontSize: "12px", color: "#555" }}>
-            {statusLong}
-          </p>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "26px", fontWeight: "bold" }}>
-            {homeGoals} : {awayGoals}
-          </div>
-        </div>
-      </div>
+     {/* Header: league info + big row [home logo] Home 1:0 Away [away logo] */}
+<div style={{ marginBottom: "12px" }}>
+  {/* League row */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      marginBottom: 6,
+    }}
+  >
+    {leagueLogo && (
+      <img
+        src={leagueLogo}
+        alt="league logo"
+        style={{ width: 18, height: 18, objectFit: "contain" }}
+      />
+    )}
+    <span style={{ fontSize: "12px", color: "#666" }}>
+      {fixture.league?.name} ({fixture.league?.country}) • {koTime}
+    </span>
+  </div>
+
+  {/* Main row: [home logo] Home 1:0 Away [away logo] */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 16,
+    }}
+  >
+    {/* Home side */}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        flex: 1,
+      }}
+    >
+      {homeLogo && (
+        <img
+          src={homeLogo}
+          alt={homeName}
+          style={{ width: 28, height: 28, objectFit: "contain" }}
+        />
+      )}
+      <span style={{ fontWeight: 600 }}>{homeName}</span>
+    </div>
+
+    {/* Score in the middle */}
+    <div
+      style={{
+        fontSize: "26px",
+        fontWeight: "bold",
+        minWidth: 80,
+        textAlign: "center",
+      }}
+    >
+      {homeGoals} : {awayGoals}
+    </div>
+
+    {/* Away side */}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        gap: 8,
+        flex: 1,
+      }}
+    >
+      <span style={{ fontWeight: 600, textAlign: "right" }}>{awayName}</span>
+      {awayLogo && (
+        <img
+          src={awayLogo}
+          alt={awayName}
+          style={{ width: 28, height: 28, objectFit: "contain" }}
+        />
+      )}
+    </div>
+  </div>
+
+  {/* Status text */}
+  <p
+    style={{
+      marginTop: 6,
+      fontSize: "12px",
+      color: "#555",
+    }}
+  >
+    {statusLong}
+  </p>
+</div>
+
+
 
       {/* Layout: left = events, right = lineups */}
       <div

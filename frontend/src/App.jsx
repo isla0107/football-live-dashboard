@@ -267,11 +267,19 @@ function App() {
                         color: "#666",
                       }}
                     >
-                      <span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        {f.league.logo && (
+                          <img
+                            src={f.league.logo}
+                            alt="league logo"
+                            style={{ width: 14, height: 14, objectFit: "contain" }}
+                          />
+                        )}
                         {f.league.name} ({f.league.country})
                       </span>
                       <span>{status}</span>
                     </div>
+
                     <div
                       style={{
                         display: "flex",
@@ -280,11 +288,40 @@ function App() {
                       }}
                     >
                       <div style={{ flex: 1 }}>
-                        <div>{f.teams.home.name}</div>
-                        <div style={{ fontSize: "12px", color: "#444" }}>
-                          {f.teams.away.name}
+                        {/* Home team */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          {f.teams.home.logo && (
+                            <img
+                              src={f.teams.home.logo}
+                              alt={f.teams.home.name}
+                              style={{ width: 18, height: 18, objectFit: "contain" }}
+                            />
+                          )}
+                          <span>{f.teams.home.name}</span>
+                        </div>
+
+                        {/* Away team */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            fontSize: "12px",
+                            color: "#444",
+                            marginTop: 2,
+                          }}
+                        >
+                          {f.teams.away.logo && (
+                            <img
+                              src={f.teams.away.logo}
+                              alt={f.teams.away.name}
+                              style={{ width: 18, height: 18, objectFit: "contain" }}
+                            />
+                          )}
+                          <span>{f.teams.away.name}</span>
                         </div>
                       </div>
+
                       <div style={{ textAlign: "center", width: "60px" }}>
                         <div style={{ fontWeight: "bold" }}>
                           {f.goals.home ?? "-"} : {f.goals.away ?? "-"}
